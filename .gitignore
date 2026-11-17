@@ -1,0 +1,20 @@
+# Dart/Flutter
+.dart_tool/
+.packages
+build/
+*.g.dart
+*.freezed.dart
+doc/api/
+pubspec.lock
+
+# Rust
+rust/target/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.iml
