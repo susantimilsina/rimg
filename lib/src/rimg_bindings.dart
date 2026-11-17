@@ -47,3 +47,6 @@ external void rimg_free(RimgResult result);
 
 @Native<Bool Function()>()
 external bool rimg_heic_supported();
+
+@Native<Bool Function()>()
+external bool rimg_avif_supported();

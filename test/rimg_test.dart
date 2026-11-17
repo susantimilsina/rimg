@@ -17,9 +17,13 @@ void main() {
     }
   });
 
-  test('avif produces an ftyp/avif container', () {
-    final out = Rimg.compress(photo, maxWidth: 800, maxHeight: 800, format: RimgFormat.avif, avifSpeed: 10);
-    expect(String.fromCharCodes(out.bytes.sublist(4, 12)), 'ftypavif');
+  test('avif: ftyp/avif container when enabled, RimgException when not', () {
+    compress() => Rimg.compress(photo, maxWidth: 800, maxHeight: 800, format: RimgFormat.avif, avifSpeed: 10);
+    if (Rimg.supportsAvif) {
+      expect(String.fromCharCodes(compress().bytes.sublist(4, 12)), 'ftypavif');
+    } else {
+      expect(compress, throwsA(isA<RimgException>()));
+    }
   });
 
   test('target size is honoured', () {

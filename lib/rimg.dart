@@ -48,6 +48,11 @@ abstract final class Rimg {
   /// HEIC bytes if you need a fallback.
   static bool get supportsHeic => b.rimg_heic_supported();
 
+  /// Whether [RimgFormat.avif] output is available. Off by default (it adds
+  /// ~2.8 MB per ABI); enable it in your app's pubspec.yaml with
+  /// `hooks: user_defines: rimg: avif: true`. Without it, AVIF throws.
+  static bool get supportsAvif => b.rimg_avif_supported();
+
   /// Decodes [input] (JPEG/PNG/WebP, or HEIC where [supportsHeic]), applies EXIF rotation, fits it inside
   /// [maxWidth]x[maxHeight] (never upscales), and re-encodes.
   ///

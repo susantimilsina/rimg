@@ -1,7 +1,7 @@
 # rimg — Rust image compression for Flutter/Dart (prototype)
 
 Decode (JPEG/PNG/WebP, **HEIC** via the OS decoder) → EXIF rotate → SIMD Lanczos resize → encode
-(mozjpeg JPEG, libwebp WebP, rav1e AVIF, PNG), with an optional
+(mozjpeg JPEG, libwebp WebP, PNG, and optionally rav1e AVIF), with an optional
 "fit under N bytes" mode. Colour-managed: JPEG keeps the source ICC profile
 (e.g. iPhone Display P3); WebP/AVIF/PNG are converted to sRGB.
 
@@ -15,10 +15,24 @@ import 'package:rimg/rimg.dart';
 final out  = await Rimg.compressAsync(bytes, maxWidth: 1920, maxHeight: 1920); // mozjpeg q80
 final fast = await Rimg.compressAsync(bytes, maxWidth: 1920, maxHeight: 1920, effort: RimgEffort.fast);
 final webp = await Rimg.compressAsync(bytes, format: RimgFormat.webp);
+final avif = await Rimg.compressAsync(bytes, format: RimgFormat.avif); // only if enabled, see below
 final fits = await Rimg.compressAsync(bytes, targetBytes: 200 * 1024);
 
 // HEIC (iPhone camera default) goes through the same call:
 if (Rimg.supportsHeic) await Rimg.compressAsync(heicBytes, maxWidth: 1920, maxHeight: 1920);
+```
+
+## AVIF output is opt-in
+
+AVIF encoding (rav1e) adds ~2.8 MB per ABI, so it is not built by default and
+`RimgFormat.avif` throws `RimgException`. To enable it, add this to **your app's** `pubspec.yaml`
+and rebuild (`Rimg.supportsAvif` tells you at runtime):
+
+```yaml
+hooks:
+  user_defines:
+    rimg:
+      avif: true
 ```
 
 ## HEIC
@@ -125,8 +139,8 @@ the outputs matches the source within ~1 level on iOS and Android.
 
 | Build | Android arm64 | iOS arm64 |
 |---|---|---|
-| with AVIF (default) | 6.4 MB | 6.2 MB |
-| `--no-default-features` (no AVIF) | 3.6 MB | — |
+| **default (no AVIF)** | **3.9 MB** | **3.8 MB** |
+| with `avif: true` | 6.4 MB | 6.2 MB |
 
 ## Takeaways
 
@@ -138,7 +152,7 @@ the outputs matches the source within ~1 level on iOS and Android.
   * Files (photo, score 80–85): `balanced` is 17–43% smaller than fic-Android, 37–43% smaller
     than ImageIO and 55% smaller than fic-iOS. On the detailed image: 5–15% smaller.
   * Also: identical output on every platform, WebP/AVIF, exact target size, desktop support.
-  * Cost: +3.6 MB (no AVIF) to +6.4 MB per ABI.
+  * Cost: +3.9 MB per ABI (+6.4 MB with AVIF enabled).
 * **Recommendation**: use rimg `balanced` where upload bytes matter (chat/media uploads,
   slow networks), `fast` where latency matters; keep fic if neither size nor formats matter.
 

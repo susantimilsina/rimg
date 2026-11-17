@@ -413,6 +413,12 @@ pub extern "C" fn rimg_heic_supported() -> bool {
     heif::supported()
 }
 
+/// Whether this build includes the AVIF encoder (cargo feature `avif`).
+#[unsafe(no_mangle)]
+pub extern "C" fn rimg_avif_supported() -> bool {
+    cfg!(feature = "avif")
+}
+
 /// Free buffers owned by a `RimgResult`.
 ///
 /// # Safety
@@ -448,6 +454,10 @@ mod tests {
         img.write_to(&mut Cursor::new(&mut png), image::ImageFormat::Png).unwrap();
         for f in 0..4 {
             let o = RimgOptions { max_width: 320, max_height: 320, format: f, quality: 75, target_bytes: 0, avif_speed: 10, effort: 0 };
+            if f == 2 && !rimg_avif_supported() {
+                assert!(compress(&png, &o).is_err(), "AVIF must error when built without it");
+                continue;
+            }
             let out = compress(&png, &o).unwrap();
             assert_eq!((out.width, out.height), (320, 240));
             assert!(!out.bytes.is_empty());
@@ -510,6 +520,9 @@ mod tests {
         let src = testdata("photo_12mp.jpg");
         let o = RimgOptions { max_width: 256, max_height: 256, format: 0, quality: 80, target_bytes: 0, avif_speed: 10, effort: 0 };
         for format in 0..4 {
+            if format == 2 && !rimg_avif_supported() {
+                continue;
+            }
             let out = compress(&src, &RimgOptions { format, ..o }).unwrap();
             assert!(!heif::is_heif(&out.bytes), "format {format}");
         }

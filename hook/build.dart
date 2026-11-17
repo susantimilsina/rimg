@@ -24,7 +24,19 @@ void main(List<String> args) async {
   }
 
   await build(args, (input, output) async {
-    await RustBuilder(assetName: 'src/rimg_bindings.dart').run(
+    // AVIF output is opt-in (+~2.8 MB per ABI). Apps enable it with
+    //   hooks:
+    //     user_defines:
+    //       rimg:
+    //         avif: true
+    final avif = input.userDefines['avif'];
+    if (avif is! bool?) {
+      throw const FormatException('hooks.user_defines.rimg.avif must be true or false');
+    }
+    await RustBuilder(
+      assetName: 'src/rimg_bindings.dart',
+      features: [if (avif == true) 'avif'],
+    ).run(
       input: input,
       output: output,
     );

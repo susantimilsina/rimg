@@ -14,8 +14,9 @@ rgb = "0.8.53"
 webp = "0.3.1"
 
 [features]
-default = ["avif"]
-# AVIF encoding (rav1e) adds most of the binary size; disable to save ~MBs.
+default = []
+# AVIF encoding (rav1e) adds ~2.8 MB per ABI, so it is opt-in. Apps enable it with
+# `hooks: user_defines: rimg: avif: true` in their pubspec.yaml.
 avif = ["dep:ravif", "dep:imgref"]
 
 [lib]
