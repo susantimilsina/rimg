@@ -22,9 +22,19 @@ final fits = await Rimg.compressAsync(bytes, targetBytes: 200 * 1024);
 if (Rimg.supportsHeic) await Rimg.compressAsync(heicBytes, maxWidth: 1920, maxHeight: 1920);
 ```
 
+## Status
+
+| Area | State |
+|---|---|
+| Image compression (JPEG / WebP / PNG, optional AVIF) | ✅ Prototype done; tested on macOS, Android emulator, iOS simulator |
+| HEIC input | ✅ Done (iOS/macOS, Android 11+) |
+| AVIF output | ✅ Opt-in (`avif: true`), off by default to save ~2.5 MB |
+| Physical-phone testing | ⏳ Not done yet |
+| **Video compression** | 📝 Planned, not started; see [docs/video-plan.md](docs/video-plan.md) (separate `rimg_video` plugin, hardware encoders) |
+
 ## AVIF output is opt-in
 
-AVIF encoding (rav1e) adds ~2.8 MB per ABI, so it is not built by default and
+AVIF encoding (rav1e) adds ~2.5 MB per ABI, so it is not built by default and
 `RimgFormat.avif` throws `RimgException`. To enable it, add this to **your app's** `pubspec.yaml`
 and rebuild (`Rimg.supportsAvif` tells you at runtime):
 
@@ -178,6 +188,8 @@ shipping the old library (`dart test` is unaffected). Seen in this prototype's f
 the project in a path without spaces, or run `flutter clean` after editing Rust code.
 
 ## Not done yet
+
+* Video compression: planned in [docs/video-plan.md](docs/video-plan.md).
 
 * Not run on a physical phone (iPhone signing was skipped; no Android phone attached).
 * HEIC on Windows/Linux (would need libheif as an opt-in feature).

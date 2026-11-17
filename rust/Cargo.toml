@@ -15,7 +15,7 @@ webp = "0.3.1"
 
 [features]
 default = []
-# AVIF encoding (rav1e) adds ~2.8 MB per ABI, so it is opt-in. Apps enable it with
+# AVIF encoding (rav1e) adds ~2.5 MB per ABI, so it is opt-in. Apps enable it with
 # `hooks: user_defines: rimg: avif: true` in their pubspec.yaml.
 avif = ["dep:ravif", "dep:imgref"]
 

@@ -24,7 +24,7 @@ void main(List<String> args) async {
   }
 
   await build(args, (input, output) async {
-    // AVIF output is opt-in (+~2.8 MB per ABI). Apps enable it with
+    // AVIF output is opt-in (+~2.5 MB per ABI). Apps enable it with
     //   hooks:
     //     user_defines:
     //       rimg:

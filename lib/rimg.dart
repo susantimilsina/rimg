@@ -49,7 +49,7 @@ abstract final class Rimg {
   static bool get supportsHeic => b.rimg_heic_supported();
 
   /// Whether [RimgFormat.avif] output is available. Off by default (it adds
-  /// ~2.8 MB per ABI); enable it in your app's pubspec.yaml with
+  /// ~2.5 MB per ABI); enable it in your app's pubspec.yaml with
   /// `hooks: user_defines: rimg: avif: true`. Without it, AVIF throws.
   static bool get supportsAvif => b.rimg_avif_supported();
 
