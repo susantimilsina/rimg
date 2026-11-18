@@ -38,6 +38,8 @@ dependencies:
   image: ^4.13.1
   rimg:
     path: ..
+  rimg_video:
+    path: ../rimg_video
   path_provider: ^2.1.6
 
 dev_dependencies:

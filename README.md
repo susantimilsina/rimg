@@ -30,7 +30,23 @@ if (Rimg.supportsHeic) await Rimg.compressAsync(heicBytes, maxWidth: 1920, maxHe
 | HEIC input | ✅ Done (iOS/macOS, Android 11+) |
 | AVIF output | ✅ Opt-in (`avif: true`), off by default to save ~2.5 MB |
 | Physical-phone testing | ⏳ Not done yet |
-| **Video compression** | 📝 Planned, not started; see [docs/video-plan.md](docs/video-plan.md) (separate `rimg_video` plugin, hardware encoders) |
+| **Video compression** (`rimg_video/`) | 🚧 Working on the Android emulator and iOS simulator; real-phone testing and benchmark pending. See [docs/video-plan.md](docs/video-plan.md#progress) |
+
+## Video (`rimg_video`, in progress)
+
+A separate Flutter plugin in [`rimg_video/`](rimg_video/), using the phone's hardware encoder
+(AVFoundation on iOS, Media3 Transformer on Android):
+
+```dart
+import 'package:rimg_video/rimg_video.dart';
+
+final job = RimgVideo.compress(inputPath: picked.path, outputPath: '${tmp.path}/out.mp4'); // 720p H.264
+job.progress.listen((p) => print('${(p * 100).round()}%'));
+final out = await job.result; // out.fileBytes, out.width, out.height, out.codec
+```
+
+Options: `maxSize`, `bitrate`, `targetBytes`, `codec` (h264/hevc), `maxFps`, `skipIfSmaller`; `job.cancel()`.
+Rotation, HDR → SDR and audio are handled. Status, results and open issues: [docs/video-plan.md](docs/video-plan.md#progress).
 
 ## AVIF output is opt-in
 
@@ -189,7 +205,7 @@ the project in a path without spaces, or run `flutter clean` after editing Rust 
 
 ## Not done yet
 
-* Video compression: planned in [docs/video-plan.md](docs/video-plan.md).
+* Video compression: in progress; see [docs/video-plan.md](docs/video-plan.md#progress).
 
 * Not run on a physical phone (iPhone signing was skipped; no Android phone attached).
 * HEIC on Windows/Linux (would need libheif as an opt-in feature).

@@ -1,6 +1,7 @@
 # Plan: video compression (`rimg_video`)
 
-Status: **planned, not started** (written 2026-11-17).
+Status: **phases 1–4 done, phase 5 partly done** (plan written 2026-11-17, work started 2026-11-18,
+branch `feat/video-compression`). See [Progress](#progress) at the end.
 
 ## Goal
 
@@ -105,3 +106,63 @@ Rough total: **6–8 working days**, plus real-phone testing.
 - **iOS HDR → SDR** with AVAssetWriter needs care: wrong colour properties produce washed-out output.
   `AVAssetExportSession` presets do it automatically but give no bitrate control. Fallback: export session presets for HDR input.
 - **Background limits on iOS:** long encodes can be killed. Mitigate with a clear error and resume-by-retry, not partial files.
+
+## Progress
+
+### Done (2026-11-18)
+
+- **Package:** `rimg_video/` Flutter plugin, Pigeon API (`pigeons/messages.dart`, regenerate with
+  `dart run pigeon --input pigeons/messages.dart`), and the Dart API `RimgVideo.probe` / `RimgVideo.compress`
+  with progress, cancel, `targetBytes`, `maxFps`, `skipIfSmaller`, and HEVC → H.264 fallback reported in `RimgVideoOutput.codec`.
+- **Shared Dart logic** (identical on both platforms): output size, auto bitrate (~0.09 bits/pixel/frame for H.264),
+  target size with real audio bitrate plus one corrective pass, "already small → copy", and "never return a bigger file".
+- **Android** (`RimgVideoPlugin.kt`, Media3 1.11.1):
+  - Uses Presentation (resize) and FrameDropEffect (fps cap).
+  - HDR → SDR fallback chain: GL → MediaCodec → treat as SDR.
+  - Decoder fallback, CBR in target-size mode, and an HEVC size check (Media3 would otherwise silently shrink the video).
+- **iOS** (`RimgVideoPlugin.swift`): AVAssetReader → AVAssetWriter.
+  - One AVVideoComposition does rotation, scaling, fps cap and HDR → BT.709.
+  - AAC is copied through untouched, and `moov` is written first so the file can play while uploading.
+- **Test clips:** `benchmark/make_test_videos.sh` (needs ffmpeg) generates landscape 1080p, iPhone-style portrait
+  (rotation flag) at 60 fps HEVC, HLG HDR 10-bit, 4K without audio, already-small, untagged and corrupt clips.
+  `testdata/video/` is gitignored; regenerate it with the script.
+- **Checks:**
+  - `example_app` run with `--dart-define=BENCH=video` exercises every case.
+  - `benchmark/check_video_outputs.py` compares output colour and orientation with the source.
+  - `rimg_video/test` has unit tests for the Dart sizing and bitrate logic.
+
+### Results (emulator / simulator: correctness only, not phone speed)
+
+| Check | Android emulator | iOS simulator |
+|---|---|---|
+| 1080p 17 MB → 720p H.264 | 2.9 MB | 2.8 MB |
+| HEVC 720p | falls back to H.264 (emulator has no 720p HEVC encoder) | 1.9 MB (30% smaller than H.264) |
+| Target 2 MB | 2.03 MB | 2.02 MB |
+| Portrait (rotation flag) | upright 720×1280 ✅ | upright 720×1280 ✅ |
+| 60 fps → 30 fps | ✅ | ✅ |
+| HDR HLG → SDR | ❌ emulator can't decode 10-bit HEVC at all | ✅ matches Apple's own export (SSIM 0.987, mean colour ±1) |
+| Already-small file | copied, not re-encoded ✅ | re-encoded smaller (0.56 → 0.48 MB) ✅ |
+| Corrupt file | `RimgVideoException(input)` ✅ | `RimgVideoException(input)` ✅ |
+| Cancel | stops, no partial file ✅ | stops, no partial file ✅ |
+| Colour vs source | saturated colours off by ~10 levels ⚠️ | exact (±0.2) on portrait/4K; ⚠️ corrupt frames on some H.264 inputs |
+| Size added to app | ~0.5 MB download (Media3 dex) | ~0 (system frameworks) |
+
+### Open findings (need a real phone)
+
+1. **iOS simulator corrupts some H.264 inputs** (High profile with B-frames from libx264 `fast`): output frames are
+   garbled from frame 0. The same pipeline code compiled for macOS produces exact colours (mean RGB 123/129/124 vs
+   source 123/129/124), so this looks like a simulator decoder bug. **Verify on a real iPhone.**
+2. **Android emulator desaturates colours** (~10 levels in red/blue; neutral grey exact). It's identical for every file and
+   unaffected by Media3's working-colour-space setting, so it happens in the emulator's GPU layer (gfxstream)
+   before Media3 sees the frames. **Verify on a real Android phone (one Pixel, one Samsung).**
+3. **Android HDR** can't be tested on the emulator (no 10-bit HEVC decoder). The fallback chain is in place.
+4. **4K → 720p on iOS** came out at 4.6 Mbps instead of 2.5 Mbps once, on synthetic content. The next run
+   with tagged clips gave 3.7 Mbps. VideoToolbox treats the average bitrate as a soft target. Watch this on real
+   footage; target-size mode already corrects it with its second pass.
+
+### Next
+
+- Real-device run on both platforms (findings 1–3), then speed and battery numbers.
+- Phase 5 rest: benchmark against `video_compress` and `light_compressor` (time, size, VMAF at equal size). ffmpeg here
+  has libvmaf.
+- Decide the open questions above (default preset; HDR passthrough; video thumbnails).

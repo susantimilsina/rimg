@@ -13,7 +13,10 @@ import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:rimg/rimg.dart';
 
-void main() => runApp(const MaterialApp(home: BenchPage()));
+import 'video_bench.dart';
+
+void main() => runApp(MaterialApp(
+    home: const String.fromEnvironment('BENCH') == 'video' ? const VideoBenchPage() : const BenchPage()));
 
 // Top-level so the isolate closure only captures its own arguments.
 Future<int> dartJpegAsync(Uint8List src, int side, int q) =>

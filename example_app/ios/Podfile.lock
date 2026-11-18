@@ -16,6 +16,8 @@ PODS:
   - libwebp/sharpyuv (1.6.0)
   - libwebp/webp (1.6.0):
     - libwebp/sharpyuv
+  - rimg_video (0.0.1):
+    - Flutter
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
   - SDWebImage/Core (5.21.7)
@@ -26,6 +28,7 @@ PODS:
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
+  - rimg_video (from `.symlinks/plugins/rimg_video/ios`)
 
 SPEC REPOS:
   trunk:
@@ -38,11 +41,14 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_image_compress_common:
     :path: ".symlinks/plugins/flutter_image_compress_common/ios"
+  rimg_video:
+    :path: ".symlinks/plugins/rimg_video/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_image_compress_common: 11d5dcfb36f4ded92320bfa896261813a073240e
   libwebp: af5937a13536ef73f3784d69cc342b98961acf33
+  rimg_video: b2da40140a6bac8b6f1722cb89376df9bfc0e3f8
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377
 
